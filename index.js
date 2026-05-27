@@ -26,6 +26,13 @@ connectDB();
 app.use((err, req, res, next) => {
   res.status(500).json({ error: err.message });
 });
-app.listen(3000, () => {
-  console.log("El servidor esta corriendo en el puerto 3000");
-});
+const PORT = process.env.PORT || 3000;
+
+// Local: npm run dev / npm start. Vercel: exporta la app como serverless.
+if (!process.env.VERCEL) {
+  app.listen(PORT, () => {
+    console.log(`El servidor esta corriendo en el puerto ${PORT}`);
+  });
+}
+
+module.exports = app;

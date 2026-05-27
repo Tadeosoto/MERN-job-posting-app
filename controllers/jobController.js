@@ -36,11 +36,13 @@ exports.getAllJobs = async (req, res, next) => {
     const filter = {};
 
     const search = req.query.search;
-    if (search && typeof search === "string" && search.trim()) {
-      const term = search.trim();
+    const term =
+      typeof search === "string" ? search.trim() : "";
+    if (term && term !== "undefined") {
       filter.$or = [
         { title: { $regex: term, $options: "i" } },
-        { description: { $regex: term, $options: "i" } },
+        { company: { $regex: term, $options: "i" } },
+        { location: { $regex: term, $options: "i" } },
       ];
     }
 
@@ -50,7 +52,7 @@ exports.getAllJobs = async (req, res, next) => {
 
     const sortBy = req.query.sort || "-createdAt";
     const page = parseInt(req.query.page, 10) || 1;
-    const limit = parseInt(req.query.limit, 10) || 3;
+    const limit = parseInt(req.query.limit, 10) || 12;
     const skip = (page - 1) * limit;
 
     const [jobs, totalJobs] = await Promise.all([

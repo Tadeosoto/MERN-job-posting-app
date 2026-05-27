@@ -48,11 +48,18 @@ export const authApi = {
   getMe: () => apiRequest("/users/me"),
 };
 
+function buildQuery(params = {}) {
+  const clean = Object.fromEntries(
+    Object.entries(params).filter(
+      ([, value]) => value !== undefined && value !== null && value !== "",
+    ),
+  );
+  const query = new URLSearchParams(clean).toString();
+  return query ? `?${query}` : "";
+}
+
 export const jobsApi = {
-  list: (params = {}) => {
-    const query = new URLSearchParams(params).toString();
-    return apiRequest(`/jobs${query ? `?${query}` : ""}`);
-  },
+  list: (params = {}) => apiRequest(`/jobs${buildQuery(params)}`),
   get: (id) => apiRequest(`/jobs/${id}`),
   create: (job) =>
     apiRequest("/jobs", { method: "POST", body: JSON.stringify(job) }),

@@ -5,12 +5,23 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node index.js",
-    "dev": "nodemon index.js"
+    "dev": "nodemon index.js",
+    "seed:admin": "node seedAdmin.js"
   },
-  "keywords": [],
-  "author": "",
+  "keywords": [
+    "mern",
+    "express",
+    "mongodb",
+    "jwt",
+    "job-board",
+    "rest-api",
+    "cloudinary",
+    "nodemailer",
+    "vercel"
+  ],
+  "author": "Tadeo Soto (https://github.com/Tadeosoto)",
   "license": "ISC",
-  "description": "",
+  "description": "REST API for a MERN job posting platform with JWT auth, Cloudinary uploads, and email notifications",
   "dependencies": {
     "bcryptjs": "^3.0.3",
     "cloudinary": "^2.10.0",

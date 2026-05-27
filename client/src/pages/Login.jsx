@@ -42,6 +42,25 @@ export default function Login() {
 
         {error && <div className="alert alert-error">{error}</div>}
 
+        <div className="demo-credentials">
+          <strong>Cuenta admin (local)</strong>
+          <p>
+            Email: <code>admin@example.com</code>
+            <br />
+            Contraseña: <code>admin123</code>
+          </p>
+          <button
+            type="button"
+            className="btn btn-secondary btn-sm"
+            onClick={() => {
+              setEmail("admin@example.com");
+              setPassword("admin123");
+            }}
+          >
+            Rellenar credenciales admin
+          </button>
+        </div>
+
         <form onSubmit={handleSubmit} className="auth-form">
           <label>
             Email

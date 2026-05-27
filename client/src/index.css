@@ -258,6 +258,31 @@ label {
   font-size: 0.9rem;
 }
 
+.demo-credentials {
+  background: rgba(99, 102, 241, 0.1);
+  border: 1px solid rgba(99, 102, 241, 0.3);
+  border-radius: var(--radius);
+  padding: 0.85rem 1rem;
+  margin-bottom: 1rem;
+  font-size: 0.85rem;
+}
+
+.demo-credentials strong {
+  display: block;
+  margin-bottom: 0.35rem;
+}
+
+.demo-credentials p {
+  margin: 0 0 0.65rem;
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+
+.demo-credentials code {
+  color: var(--primary-hover);
+  font-size: 0.85em;
+}
+
 .brand-icon {
   font-size: 1.75rem;
 }

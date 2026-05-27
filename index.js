@@ -21,6 +21,18 @@ const limiter = rateLimit({
 app.use(helmet());
 app.use(cors({ origin: "*" }));
 app.use(express.json());
+
+// Express 5: req.query es solo lectura; express-mongo-sanitize necesita poder escribirlo
+app.use((req, res, next) => {
+  Object.defineProperty(req, "query", {
+    ...Object.getOwnPropertyDescriptor(req, "query"),
+    value: { ...req.query },
+    writable: true,
+    configurable: true,
+    enumerable: true,
+  });
+  next();
+});
 app.use(mongoSanitize());
 app.use(limiter);
 

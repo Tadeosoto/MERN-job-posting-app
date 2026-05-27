@@ -69,13 +69,27 @@ exports.signIn = async (req, res, next) => {
       process.env.SECRET_KEY,
       { expiresIn: "1d" },
     );
-    res.json({ token, message: "Login successfull" });
+    res.json({
+      token,
+      message: "Login successful",
+      user: {
+        _id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        pic: user.pic,
+      },
+    });
   } catch (error) {
     next(error);
   }
 };
 
+exports.getMe = async (req, res) => {
+  res.json(req.user);
+};
+
 exports.getUsers = async (req, res) => {
-  const users = await User.find();
+  const users = await User.find().select("-password");
   res.json(users);
 };

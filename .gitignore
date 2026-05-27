@@ -1,0 +1,28 @@
+# Dependencies
+node_modules/
+
+# Environment variables (secrets)
+.env
+.env.local
+.env.*.local
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Build / coverage
+dist/
+build/
+coverage/
+
+# Uploads (if you add local file storage later)
+uploads/

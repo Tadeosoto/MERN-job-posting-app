@@ -93,3 +93,26 @@ exports.getUsers = async (req, res) => {
   const users = await User.find().select("-password");
   res.json(users);
 };
+
+exports.deleteUser = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+
+    if (req.user._id.toString() === id) {
+      return res
+        .status(400)
+        .json({ message: "You cannot delete your own account" });
+    }
+
+    const user = await User.findByIdAndDelete(id);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    res.json({
+      message: `User '${user.name}' deleted successfully`,
+    });
+  } catch (err) {
+    next(err);
+  }
+};

@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+
 const jobSchema = new mongoose.Schema({
   title: {
     type: String,
@@ -11,6 +12,11 @@ const jobSchema = new mongoose.Schema({
     type: String,
   },
   salary: Number,
+  postedBy: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User",
+    required: true,
+  },
   createdAt: {
     type: Date,
     default: Date.now,

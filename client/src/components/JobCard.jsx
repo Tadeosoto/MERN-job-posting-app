@@ -1,4 +1,4 @@
-export default function JobCard({ job, onEdit, onDelete, canManage }) {
+export default function JobCard({ job, onEdit, onDelete, canManage, isOwn }) {
   const salary =
     job.salary != null && job.salary !== ""
       ? `$${Number(job.salary).toLocaleString()}`
@@ -7,7 +7,10 @@ export default function JobCard({ job, onEdit, onDelete, canManage }) {
   return (
     <article className="job-card">
       <div className="job-card-header">
-        <h3>{job.title}</h3>
+        <div>
+          <h3>{job.title}</h3>
+          {isOwn && <span className="own-job-badge">Tu publicación</span>}
+        </div>
         <time dateTime={job.createdAt}>
           {new Date(job.createdAt).toLocaleDateString("es-MX", {
             day: "numeric",

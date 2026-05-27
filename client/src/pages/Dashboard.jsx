@@ -6,7 +6,7 @@ import JobCard from "../components/JobCard";
 import JobForm from "../components/JobForm";
 
 export default function Dashboard() {
-  const { canPostJobs } = useAuth();
+  const { canPostJobs, canManageJob, user } = useAuth();
   const [jobs, setJobs] = useState([]);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
@@ -127,7 +127,12 @@ export default function Dashboard() {
             <JobCard
               key={job._id}
               job={job}
-              canManage={canPostJobs}
+              canManage={canManageJob(job)}
+              isOwn={Boolean(
+                user &&
+                  (job.postedBy?._id === user._id ||
+                    job.postedBy === user._id),
+              )}
               onEdit={setEditingJob}
               onDelete={handleDelete}
             />

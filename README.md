@@ -6,7 +6,7 @@
 [![MongoDB](https://img.shields.io/badge/MongoDB-Atlas-47A248?style=flat-square&logo=mongodb&logoColor=white)](https://www.mongodb.com/atlas)
 [![License](https://img.shields.io/badge/License-ISC-blue?style=flat-square)](LICENSE)
 
-Full-stack job board with role-based access, a modern React dashboard, Cloudinary image uploads, and automated email alerts when new positions are published.
+Full-stack job board with **role-based access**, a **React dashboard**, **job ownership** for employers, **Cloudinary** profile photos, and **email alerts** when new positions are published.
 
 **Repository:** [github.com/Tadeosoto/MERN-job-posting-app](https://github.com/Tadeosoto/MERN-job-posting-app)  
 **Live API:** [mern-job-posting-app.vercel.app](https://mern-job-posting-app.vercel.app/api/ping)
@@ -15,31 +15,70 @@ Full-stack job board with role-based access, a modern React dashboard, Cloudinar
 
 ## Overview
 
-This project simulates a small **hiring platform**: employers and admins publish job openings; employees browse listings and receive email notifications for new opportunities. It demonstrates end-to-end MERN development—from database modeling and secured REST APIs to a responsive UI with session management.
+This project is a small **hiring platform**: employers publish job openings they own; employees browse listings and get notified by email; admins manage users and have full control over jobs.
 
-Built as a learning and portfolio project, it reflects patterns used in production apps: authentication, authorization, file uploads to cloud storage, transactional email, input sanitization, rate limiting, and serverless deployment.
+It covers the full MERN stack—MongoDB, Express 5, React 19, Node.js—with JWT sessions, protected routes, a modern dark UI, and deployment on Vercel.
 
 ### Why it matters (for recruiters)
 
 | Area | What I implemented |
 |------|-------------------|
-| **Backend** | REST API with Express 5, Mongoose, JWT auth, protected routes |
-| **Security** | Helmet, rate limiting, NoSQL injection sanitization, bcrypt passwords, role-based access |
-| **Integrations** | MongoDB Atlas, Cloudinary (profile images), Gmail/Nodemailer (job alerts) |
-| **Frontend** | React 19 + Vite dashboard: login, CRUD jobs, search, pagination, admin panel |
-| **DevOps** | Vercel serverless deployment, environment-based config, `.env` secrets excluded from Git |
+| **Backend** | REST API, Mongoose models, JWT auth, role + ownership checks on mutations |
+| **Security** | Helmet, rate limiting, NoSQL sanitization, bcrypt, Express 5 compatibility fixes |
+| **Integrations** | MongoDB Atlas, Cloudinary, Gmail/Nodemailer |
+| **Frontend** | React dashboard: login/register, job CRUD UI, search, pagination, admin user management |
+| **Authorization** | Three roles with distinct permissions; employers only edit their own postings |
+| **DevOps** | Vercel serverless API, separate frontend deploy, env-based secrets |
 
 ---
 
 ## Features
 
-- **User registration & login** — JWT sessions; profile photo upload to Cloudinary
-- **Roles** — `admin`, `employer`, `employee` with different permissions
-- **Job management** — Create, read, update, delete job postings (title, company, location, salary)
-- **Email notifications** — Employees (and configured recipients) get HTML emails when a job is posted
-- **Dashboard UI** — Dark-themed admin-style interface; no Postman required for daily use
-- **Search & pagination** — Filter jobs by title; paginated API responses
-- **Admin panel** — List all registered users (admin only)
+### Authentication & users
+
+- Register with optional profile photo (Cloudinary)
+- Login with JWT; session persisted in the browser
+- Roles: `admin`, `employer`, `employee` (set on register: `employer` or `employee`; admin via seed script)
+- `GET /api/users/me` to restore session
+
+### Jobs
+
+- List all jobs with **search** (title, company, location) and **pagination**
+- Each job stores **`postedBy`** (creator user id)
+- **Email notifications** to all `employee` users (and configured sender) when a job is posted
+- Jobs show publisher info in API responses (`populate` on `postedBy`)
+
+### Dashboard UI (`client/`)
+
+- Dark-themed responsive layout with sidebar navigation
+- Login / register pages
+- Job board with search, pagination, edit modal
+- **“Tu publicación”** badge on jobs you created (employer)
+- Post job form (employers & admins only)
+- Admin panel: list users, **delete users** (cannot delete yourself)
+
+### Security & ops
+
+- Protected API routes (`Authorization: Bearer <token>`)
+- Rate limiting, CORS, Helmet
+- `.env` excluded from Git; `.env.example` provided
+- MongoDB connection caching for Vercel serverless
+
+---
+
+## Role permissions
+
+| Action | Admin | Employer | Employee |
+|--------|:-----:|:--------:|:--------:|
+| View all jobs | ✅ | ✅ | ✅ |
+| Search / paginate jobs | ✅ | ✅ | ✅ |
+| Post new job | ✅ | ✅ | ❌ |
+| Edit job | Any job | **Own jobs only** | ❌ |
+| Delete job | Any job | **Own jobs only** | ❌ |
+| Register / login | ✅ | ✅ | ✅ |
+| List all users | ✅ | ❌ | ❌ |
+| Delete users | ✅ (not self) | ❌ | ❌ |
+| Receive job alert emails | — | — | ✅ |
 
 ---
 
@@ -47,14 +86,14 @@ Built as a learning and portfolio project, it reflects patterns used in producti
 
 | Layer | Technologies |
 |-------|----------------|
-| **Frontend** | React 19, React Router, Vite, CSS (custom design system) |
-| **Backend** | Node.js, Express 5, Mongoose |
+| **Frontend** | React 19, React Router 7, Vite 8, custom CSS |
+| **Backend** | Node.js, Express 5, Mongoose 9 |
 | **Database** | MongoDB Atlas |
-| **Auth** | JSON Web Tokens (JWT), bcrypt |
-| **Storage** | Cloudinary (images) |
+| **Auth** | JWT, bcryptjs |
+| **Storage** | Cloudinary (multer memory → base64 upload) |
 | **Email** | Nodemailer + Gmail App Password |
 | **Security** | Helmet, express-rate-limit, express-mongo-sanitize, CORS |
-| **Deploy** | Vercel (serverless functions) |
+| **Deploy** | Vercel (API + optional frontend) |
 
 ---
 
@@ -63,10 +102,10 @@ Built as a learning and portfolio project, it reflects patterns used in producti
 ```mermaid
 flowchart LR
   subgraph Client
-    UI[React Dashboard]
+    UI[React Dashboard :5173]
   end
   subgraph Vercel
-    API[Express API]
+    API[Express API :3000]
   end
   subgraph Services
     DB[(MongoDB Atlas)]
@@ -83,15 +122,18 @@ flowchart LR
 mern-stack-project/
 ├── client/                 # React + Vite frontend
 │   └── src/
-│       ├── pages/          # Login, Dashboard, Admin
-│       ├── components/     # Layout, JobCard, forms
-│       └── context/        # Auth session
-├── controllers/            # Business logic
-├── models/                 # Mongoose schemas (User, Job)
-├── routes/                 # API routes
-├── middleware/             # Auth, upload, email
-├── config/                 # Cloudinary
-└── index.js                # Express app entry
+│       ├── pages/          # Login, Register, Dashboard, PostJob, AdminUsers
+│       ├── components/     # Layout, JobCard, JobForm, ProtectedRoute
+│       ├── context/        # AuthContext (session, canManageJob)
+│       └── api/            # API client
+├── controllers/            # userController, jobController
+├── models/                 # Users, Jobs (postedBy)
+├── routes/
+├── middleware/             # auth, upload, nodemailer
+├── config/                 # cloudinary
+├── seedAdmin.js
+├── vercel.json
+└── index.js
 ```
 
 ---
@@ -101,11 +143,11 @@ mern-stack-project/
 ### Prerequisites
 
 - Node.js 18+
-- MongoDB Atlas cluster ([Network Access](https://www.mongodb.com/docs/atlas/security-whitelist/) configured for your environment)
+- MongoDB Atlas ([Network Access](https://www.mongodb.com/docs/atlas/security-whitelist/) — use `0.0.0.0/0` for Vercel)
 - Cloudinary account
-- Gmail with [App Password](https://support.google.com/accounts/answer/185833) (for Nodemailer)
+- Gmail [App Password](https://support.google.com/accounts/answer/185833)
 
-### 1. Clone & configure API
+### 1. Clone & install API
 
 ```bash
 git clone https://github.com/Tadeosoto/MERN-job-posting-app.git
@@ -114,7 +156,7 @@ npm install
 copy .env.example .env   # Windows — use `cp` on macOS/Linux
 ```
 
-Fill in `.env` (see `.env.example`). **Never commit `.env`.**
+Fill in `.env`. **Never commit `.env`.**
 
 ### 2. Run API
 
@@ -122,9 +164,10 @@ Fill in `.env` (see `.env.example`). **Never commit `.env`.**
 npm run dev
 ```
 
-API base: `http://localhost:3000/api`
+API: `http://localhost:3000/api`  
+Health: `http://localhost:3000/api/ping`
 
-### 3. Run frontend (optional)
+### 3. Run frontend
 
 ```bash
 cd client
@@ -133,19 +176,38 @@ copy .env.example .env
 npm run dev
 ```
 
-Open `http://localhost:5173` — Vite proxies `/api` to the backend locally.
+Open **`http://localhost:5173`** — Vite proxies `/api` → `localhost:3000` by default.
 
-### 4. Seed admin user (optional)
+For local API only (no proxy file), set in `client/.env`:
 
-```bash
-node seedAdmin.js
+```env
+VITE_API_URL=http://localhost:3000/api
 ```
 
-Default: `admin@example.com` / `admin123` — change after first login in production.
+### 4. Create admin user
+
+```bash
+npm run seed:admin
+```
+
+| Field | Value |
+|-------|--------|
+| Email | `admin@example.com` |
+| Password | `admin123` |
+
+Re-running the seed **resets** the admin password if the user already exists.
+
+### 5. Quick test flow
+
+1. **Admin** — login → Users → manage accounts; edit any job  
+2. **Register** as **Employer** → Publicar empleo → edit/delete only your posts  
+3. **Register** as **Employee** → browse jobs; receive email when employers post  
 
 ---
 
 ## Environment variables
+
+### API (root `.env`)
 
 | Variable | Description |
 |----------|-------------|
@@ -157,50 +219,82 @@ Default: `admin@example.com` / `admin123` — change after first login in produc
 | `EMAIL` | Sender Gmail address |
 | `PASSWORD` | Gmail app password |
 
-Frontend (`client/.env`):
+### Frontend (`client/.env`)
 
 | Variable | Description |
 |----------|-------------|
-| `VITE_API_URL` | API base URL (e.g. `http://localhost:3000/api` or production URL) |
+| `VITE_API_URL` | API base URL (omit locally to use Vite proxy, or set production URL) |
 
 ---
 
-## API overview
+## API reference
+
+All protected routes: `Authorization: Bearer <token>`
 
 | Method | Endpoint | Auth | Description |
 |--------|----------|------|-------------|
 | `GET` | `/api/ping` | — | Health check |
-| `POST` | `/api/users` | — | Register (multipart: optional `pic`) |
+| `POST` | `/api/users` | — | Register (`multipart/form-data`: `name`, `email`, `password`, optional `role`, optional `pic`) |
 | `POST` | `/api/users/signin` | — | Login → `{ token, user }` |
 | `GET` | `/api/users/me` | Bearer | Current user |
 | `GET` | `/api/users` | Admin | List users |
-| `GET` | `/api/jobs` | Bearer | List jobs (search, pagination) |
-| `POST` | `/api/jobs` | Bearer | Create job + send emails |
-| `PUT` | `/api/jobs/:id` | Bearer | Update job |
-| `DELETE` | `/api/jobs/:id` | Bearer | Delete job |
+| `DELETE` | `/api/users/:id` | Admin | Delete user (not self) |
+| `GET` | `/api/jobs` | Bearer | List jobs (`?search=&page=&limit=&sort=-createdAt`) |
+| `GET` | `/api/jobs/:id` | Bearer | Single job |
+| `POST` | `/api/jobs` | Employer/Admin | Create job (`postedBy` = current user) + emails |
+| `PUT` | `/api/jobs/:id` | Owner/Admin | Update job |
+| `DELETE` | `/api/jobs/:id` | Owner/Admin | Delete job |
 
-Protected routes require header: `Authorization: Bearer <token>`
+**Register roles:** only `employer` or `employee` allowed via API; default `employer`.
+
+**Job mutations:** employers receive `403` if they try to edit/delete another user's job.
 
 ---
 
 ## Deployment
 
-| Component | Platform | Notes |
-|-----------|----------|--------|
-| **API** | Vercel (repo root) | Set all env vars in project settings |
-| **UI** | Vercel (`client/` root) | `VITE_API_URL=https://<your-api>.vercel.app/api` |
+### API (repo root)
 
-MongoDB Atlas: allow `0.0.0.0/0` for serverless IPs or use Atlas-specific Vercel integration.
+1. Connect repo on [Vercel](https://vercel.com)
+2. Add all root `.env` variables
+3. Deploy — `vercel.json` routes requests to `index.js`
+
+### Frontend (`client/`)
+
+1. New Vercel project, same repo
+2. **Root Directory:** `client`
+3. Environment variable:
+   ```env
+   VITE_API_URL=https://mern-job-posting-app.vercel.app/api
+   ```
+4. Deploy → use this URL as your public app (not the API root, which returns JSON)
+
+### MongoDB Atlas
+
+- **Network Access:** allow `0.0.0.0/0` for serverless (or restrict per your setup)
+- **Database Access:** user in `MONGODB_URI` with read/write
 
 ---
 
-## Roadmap / possible improvements
+## Scripts
 
-- [ ] Deploy frontend to production URL and add screenshots to README
+| Command | Where | Description |
+|---------|-------|-------------|
+| `npm run dev` | root | API with nodemon |
+| `npm start` | root | API production mode |
+| `npm run seed:admin` | root | Create/reset admin user |
+| `npm run dev` | `client/` | Vite dev server |
+| `npm run build` | `client/` | Production build |
+
+---
+
+## Roadmap
+
+- [ ] Production frontend URL + screenshots in README
+- [ ] Job `description` field + rich UI
 - [ ] Unit / integration tests (Jest, Supertest)
-- [ ] Refresh tokens & httpOnly cookies
-- [ ] Job `description` field in schema + rich text in UI
-- [ ] CI/CD with GitHub Actions
+- [ ] Refresh tokens / httpOnly cookies
+- [ ] CI/CD (GitHub Actions)
 
 ---
 
@@ -208,13 +302,23 @@ MongoDB Atlas: allow `0.0.0.0/0` for serverless IPs or use Atlas-specific Vercel
 
 **Tadeo Soto** — [GitHub @Tadeosoto](https://github.com/Tadeosoto)
 
-If you're reviewing this for hiring purposes, I'm happy to walk through architecture decisions, security trade-offs, or live demo the app in a call.
+Open to discussing architecture, security choices, or a live walkthrough for hiring teams.
 
 ---
 
 ## Resumen en español
 
-Aplicación full-stack tipo **bolsa de empleo**: registro con foto (Cloudinary), login con JWT, roles (`admin`, `employer`, `employee`), CRUD de vacantes, correos automáticos a empleados y dashboard React para usar todo desde el navegador. API desplegada en Vercel; MongoDB Atlas como base de datos.
+**Bolsa de empleo full-stack (MERN)** con:
+
+- **Dashboard React** (login, registro, listado de vacantes, publicar/editar con botones)
+- **Roles:** `admin` (todo + borrar usuarios), `employer` (publica y solo edita **sus** empleos), `employee` (solo ve y recibe correos)
+- **JWT** para sesiones, fotos en **Cloudinary**, alertas por **Gmail**
+- Cada empleo guarda **`postedBy`** para control de propiedad
+- API en **Vercel**, base de datos en **MongoDB Atlas**
+
+**Local:** `npm run dev` en la raíz + `npm run dev` en `client/` → [http://localhost:5173](http://localhost:5173)
+
+**Admin:** `npm run seed:admin` → `admin@example.com` / `admin123`
 
 ---
 

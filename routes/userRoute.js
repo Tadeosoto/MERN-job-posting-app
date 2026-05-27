@@ -6,10 +6,12 @@ const {
   getMe,
   postUsers,
   signIn,
+  deleteUser,
 } = require("../controllers/userController");
 const { protect, adminOnly } = require("../middleware/authMiddleware");
 router.get("/users/me", protect, getMe);
 router.get("/users", protect, adminOnly, getUsers);
+router.delete("/users/:id", protect, adminOnly, deleteUser);
 router.post("/users/signin", signIn);
 router.post("/users", upload.single("pic"), postUsers);
 module.exports = router;

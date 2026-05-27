@@ -53,12 +53,31 @@ export function AuthProvider({ children }) {
   };
 
   const isAdmin = user?.role === "admin";
-  const canPostJobs =
-    user?.role === "admin" || user?.role === "employer";
+  const isEmployer = user?.role === "employer";
+  const canPostJobs = isAdmin || isEmployer;
+
+  const canManageJob = (job) => {
+    if (!user || !job) return false;
+    if (isAdmin) return true;
+    if (isEmployer) {
+      const ownerId = job.postedBy?._id || job.postedBy;
+      return ownerId && String(ownerId) === String(user._id);
+    }
+    return false;
+  };
 
   return (
     <AuthContext.Provider
-      value={{ user, loading, login, logout, isAdmin, canPostJobs }}
+      value={{
+        user,
+        loading,
+        login,
+        logout,
+        isAdmin,
+        isEmployer,
+        canPostJobs,
+        canManageJob,
+      }}
     >
       {children}
     </AuthContext.Provider>

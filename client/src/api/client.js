@@ -70,4 +70,5 @@ export const jobsApi = {
 
 export const usersApi = {
   list: () => apiRequest("/users"),
+  delete: (id) => apiRequest(`/users/${id}`, { method: "DELETE" }),
 };
